@@ -40,10 +40,7 @@ func (l *loader) ExecGenerateCmd(cmd *cobra.Command, args []string) {
 	}
 
 	err := filepath.Walk(l.Flags.InputPath, func(path string, info os.FileInfo, err error) error {
-		if !l.matchesInputPath(path) {
-			return nil
-		}
-		if info.IsDir() {
+		if !l.shouldBeLoaded(path, info) {
 			return nil
 		}
 
