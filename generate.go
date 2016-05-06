@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"go/format"
 	"io/ioutil"
 	"log"
@@ -50,7 +51,14 @@ func (l *loader) ExecGenerateCmd(cmd *cobra.Command, args []string) {
 		if err != nil {
 			return maskAny(err)
 		}
-		newTmplCtx.AssetMap[path] = raw
+		var b bytes.Buffer
+		w := gzip.NewWriter(&b)
+		_, err = w.Write(raw)
+		w.Close()
+		if err != nil {
+			return maskAny(err)
+		}
+		newTmplCtx.AssetMap[path] = b.Bytes()
 
 		return nil
 	})

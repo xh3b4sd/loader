@@ -49,6 +49,24 @@ func NewLoader(config Config) (spec.Loader, error) {
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 		},
+
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			if newLoader.Flags.Depth < -1 {
+				log.Fatalf("%#v\n", maskAnyf(invalidConfigError, "depth must be greater than -1"))
+			}
+			if newLoader.Flags.InputPath == "" {
+				log.Fatalf("%#v\n", maskAnyf(invalidConfigError, "input path must not be empty"))
+			}
+			if newLoader.Flags.LoaderFuncPrefix == "" {
+				log.Fatalf("%#v\n", maskAnyf(invalidConfigError, "loader function name must not be empty"))
+			}
+			if newLoader.Flags.OutputFileName == "" {
+				log.Fatalf("%#v\n", maskAnyf(invalidConfigError, "output file name must not be empty"))
+			}
+			if newLoader.Flags.Package == "" {
+				log.Fatalf("%#v\n", maskAnyf(invalidConfigError, "package must not be empty"))
+			}
+		},
 	}
 
 	// flags
@@ -57,22 +75,6 @@ func NewLoader(config Config) (spec.Loader, error) {
 	newLoader.Cmd.PersistentFlags().StringVarP(&newLoader.Flags.LoaderFuncPrefix, "loader-func-prefix", "l", "Loader", "prefix of the generated loader functions")
 	newLoader.Cmd.PersistentFlags().StringVarP(&newLoader.Flags.OutputFileName, "output-file-name", "o", "loader.go", "name of the generated output file")
 	newLoader.Cmd.PersistentFlags().StringVarP(&newLoader.Flags.Package, "package", "p", "main", "name of the generated output file")
-
-	if newLoader.Flags.Depth < -1 {
-		return nil, maskAnyf(invalidConfigError, "depth must be greater than -1")
-	}
-	if newLoader.Flags.InputPath == "" {
-		return nil, maskAnyf(invalidConfigError, "input path must not be empty")
-	}
-	if newLoader.Flags.LoaderFuncPrefix == "" {
-		return nil, maskAnyf(invalidConfigError, "loader function name must not be empty")
-	}
-	if newLoader.Flags.OutputFileName == "" {
-		return nil, maskAnyf(invalidConfigError, "output file name must not be empty")
-	}
-	if newLoader.Flags.Package == "" {
-		return nil, maskAnyf(invalidConfigError, "package must not be empty")
-	}
 
 	return newLoader, nil
 }

@@ -5,21 +5,32 @@ package main
 var Template = `package {{.Package}}
 
 import (
+	"bytes"
+	"compress/gzip"
 	"fmt"
+	"io"
 )
 
 // {{.MapName}} contains all loaded files. Map keys are file names. Map values
 // are file contents.
-var {{.MapName}} = map[string]string{{"{"}}{{range $fileName, $content := .AssetMap}}
-		"{{$fileName}}": {{printf "%q" $content}},{{end}}
+var {{.MapName}} = map[string][]byte{{"{"}}{{range $fileName, $content := .AssetMap}}
+		"{{$fileName}}": {{"{"}}{{range $x := $content}}{{$x}}, {{end}}{{"}"}},{{end}}
 }
 
 // {{.LoaderFuncPrefix}}ReadFile returns the content of the loaded asset
 // associated to assetName. If the requested asset does not exist, an error is
 // returned.
 func {{.LoaderFuncPrefix}}ReadFile(assetName string) ([]byte, error) {
-	if s, ok := {{.MapName}}[assetName]; ok {
-		return []byte(s), nil
+	if v, ok := {{.MapName}}[assetName]; ok {
+		b := bytes.NewBuffer(v)
+		r, err := gzip.NewReader(b)
+		if err != nil {
+			return nil, err
+		}
+		var raw bytes.Buffer
+		io.Copy(&raw, r)
+		r.Close()
+		return raw.Bytes(), nil
 	}
 
 	return nil, fmt.Errorf("asset not found: %s", assetName)
