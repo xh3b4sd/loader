@@ -11,12 +11,11 @@ func panicOnError(err error) {
 		panic(err)
 	}
 }
+func (l *loader) depthOf(inputPath string) int {
+	return len(strings.Split(inputPath, string(filepath.Separator))) - 1
+}
 
 func (l *loader) shouldBeLoaded(inputPath string, info os.FileInfo) bool {
-	if l.Flags.Depth == -1 {
-		return true
-	}
-
 	if inputPath == l.Flags.OutputFileName {
 		return false
 	}
@@ -26,7 +25,7 @@ func (l *loader) shouldBeLoaded(inputPath string, info os.FileInfo) bool {
 	// Note that strings.Split always returns a slice containing at least one
 	// item, that is the input string itself if the input could not be split.
 	// Thus we need to subtract 1 for a proper depth check.
-	if len(strings.Split(inputPath, string(filepath.Separator)))-1 > l.Flags.Depth {
+	if l.Flags.Depth != -1 && l.depthOf(inputPath)-l.InputDepth >= l.Flags.Depth {
 		return false
 	}
 
