@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -66,6 +68,19 @@ func NewLoader(config Config) (spec.Loader, error) {
 			if newLoader.Flags.Package == "" {
 				log.Fatalf("%#v\n", maskAnyf(invalidConfigError, "package must not be empty"))
 			}
+
+			// Calculate input depth.
+			newLoader.InputDepth = newLoader.depthOf(newLoader.Flags.InputPath)
+			fileInfo, err := os.Stat(newLoader.Flags.InputPath)
+			if err != nil {
+				log.Fatalf("%#v\n", maskAny(err))
+			}
+			if fileInfo.IsDir() && newLoader.Flags.InputPath[len(newLoader.Flags.InputPath)-1] != filepath.Separator {
+				// In case the given input path represents a directory, but the given
+				// input path does not contain a slash, we need to fix the input depth
+				// explicitely by increasing the input depth by 1.
+				newLoader.InputDepth++
+			}
 		},
 	}
 
@@ -90,6 +105,16 @@ func (l *loader) Boot() {
 
 type loader struct {
 	Config
+
+	// InputDepth describes the initial depth of the given input path. See the
+	// following examples.
+	//
+	//     bar.ext          0
+	//     foo/bar          1
+	//     foo/bar.ext      1
+	//     foo/bar/baz.ext  2
+	//
+	InputDepth int
 }
 
 func main() {
