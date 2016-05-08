@@ -23,6 +23,16 @@ To embed files put the following comment into your source code.
 //go:generate loader generate
 ```
 
+When running within a CI system you might see this error.
+```
+running "loader": exec: "loader": executable file not found in $PATH
+```
+
+In this case the following should do the trick.
+```
+//go:generate ${GOPATH}/bin/loader generate
+```
+
 To generate code do the following.
 ```
 go generate
