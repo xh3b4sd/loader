@@ -1,6 +1,9 @@
 # loader
-Loader generates go code containing loaded assets. That way arbitrary files can
-be embedded into go source code. This is like
+Loader generates go code containing loaded assets. It was originally developed
+to support the Anna project. See https://github.com/xh3b4sd/anna for more
+information.
+
+Using loader arbitrary files can be embedded into go source code. This is like
 https://github.com/jteeuwen/go-bindata but not binary safe. Only use this for
 UTF-8 files.
 
